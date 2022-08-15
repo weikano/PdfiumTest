@@ -13,6 +13,7 @@ public:
     };
 
     IReaderNote(int annotIndex);
+    IReaderNote(int startIndex, int endIndex, const std::string &uuid, const std::string &content, long timestamp);
     void loadData(FPDF_PAGE page);
     int startIndex() const;
 

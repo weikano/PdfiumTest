@@ -35,6 +35,7 @@ add_executable(PdfiumTest
   filewriterimpl.cpp
   annot_const.cpp
   ireadernote.cpp
+  test_ireadnote.cpp
 #  fs_rectf_helper.cpp
 
 #  converter.cpp

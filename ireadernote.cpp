@@ -67,7 +67,7 @@ int IReaderNote::annotIndex() const
 
 IReaderNote::IReaderNoteMergeResult IReaderNote::merge(const IReaderNote &other)
 {
-    if(_startIndex < other.startIndex() && _endIndex > other.endIndex()) {
+    if(_startIndex > other.endIndex() || _endIndex < other.startIndex()) {
         return Ignore;
     }
     _startIndex = std::min(_startIndex, other.startIndex());
@@ -82,3 +82,10 @@ IReaderNote::IReaderNoteMergeResult IReaderNote::merge(const IReaderNote &other)
     return Merged;
 }
 
+
+IReaderNote::IReaderNote(int startIndex, int endIndex, const std::string &uuid, const std::string &content, long timestamp) : _startIndex(startIndex),
+    _endIndex(endIndex),
+    _uuid(uuid),
+    _content(content),
+    _timestamp(timestamp)
+{}

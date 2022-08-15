@@ -12,6 +12,8 @@
 #include "pdfdocument.h"
 #include "PDFUtil.h"
 
+#include "test_ireadnote.h"
+
 //#include "fpdf_stringhelper.h"
 
 //#include "converter.h"
@@ -68,23 +70,10 @@ int main(int argc, char *argv[])
 
     delete test;
 
-    FPDF_DestroyLibrary();
-
-    for(const auto line : lines)
-    {
-        printf("line(%f, %f, %f, %f)\n", line.left, line.top, line.bottom, line.right);
-    }
+    FPDF_DestroyLibrary();       
 
 
-//    int utf_len = PDFUtil::utf8_length(msg.c_str(), msg.length());
-//    printf("utf_len :%d\n", utf_len);
-//    unsigned short wmsg[utf_len];
-//    int len = PDFUtil::utf8_to_ucs2(wmsg, utf_len, msg.c_str(), -1);
-//    wmsg[len] = '\0';
-
-//    std::string out;
-//    PDFUtil::ucs2_chars_to_string(out, len, wmsg);
-//    printf("%s\n", out.c_str());
+    test_ireadernote_merge();
 
     return 0;
 }
