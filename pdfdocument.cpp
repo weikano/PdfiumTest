@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 #include <iostream>
 #include <malloc.h>
 #include <assert.h>
@@ -6,6 +7,7 @@
 
 #include "pdfdocument.h"
 
+#include "public/fpdfview.h"
 #include "public/fpdf_structtree.h"
 #include "public/fpdf_catalog.h"
 #include "public/fpdf_edit.h"
@@ -145,7 +147,7 @@ static void getFileIdentifier(FPDF_DOCUMENT doc, FPDF_FILEIDTYPE type)
 }
 
 PDFDocument::PDFDocument(const char *path, const char *pwd)
-{
+{    
     mDoc = FPDF_LoadDocument(path, pwd);
     getFileIdentifier(mDoc, FILEIDTYPE_PERMANENT);
     getFileIdentifier(mDoc, FILEIDTYPE_CHANGING);    
@@ -360,21 +362,114 @@ void PDFDocument::listLines(int pageIndex, int startIndex, int endIndex, std::ve
 void PDFDocument::listIReaderAnnotations(int pageIndex, std::vector<const IReaderNote*> &notes)
 {
     ScopedFPDFPage page = ScopedFPDFPage(FPDF_LoadPage(mDoc, pageIndex));
-//    std::vector<const IReaderNote*> notes;
-    int size = FPDFPage_GetAnnotCount(page.get());
-    for(int i=0;i<size;i++) {
-        ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_GetAnnot(page.get(), i));
-        if(FPDFAnnot_HasKey(annot.get(), kIReaderNoteID)) {
-            IReaderNote *note = new IReaderNote(i);
-            note->loadData(page.get());
-            notes.push_back(note);
-        }
-    }
+    listIReaderAnnotations(page.get(), notes);
 }
 
 void PDFDocument::setSavePath(const char *newSavePath)
 {
     mSavePath = newSavePath;
+}
+
+void PDFDocument::addIReaderNotes(int pageIndex, std::vector<IReaderNote *> &notes)
+{
+    ScopedFPDFPage page = ScopedFPDFPage(FPDF_LoadPage(mDoc, pageIndex));
+    _addIReaderNotes(page.get(), notes);
+    FPDFPage_GenerateContent(page.get());
+    if(mSavePath) {
+        FileWriterImpl *writer = new FileWriterImpl;
+        writer->OpenPDFFileForWrite(mSavePath);
+        if(FPDF_SaveAsCopy(mDoc, writer, 0)) {
+            printf("SaveAsCopy\n");
+        }
+        writer->ClosePDFFileForWrite();
+        delete writer;
+    }
+}
+
+void PDFDocument::_addIReaderNotes(const FPDF_PAGE page, std::vector<IReaderNote *> &notes)
+{
+    std::vector<const IReaderNote*> exists;
+    listIReaderAnnotations(page, exists);
+    for(int i=0, size=notes.size();i<size;i++) {
+        IReaderNote *note = notes.at(i);
+        for(int m=0, n=exists.size();m<n;m++) {
+            const IReaderNote *exist = exists.at(m);
+            if(note->merge(*exist) == IReaderNote::IReaderNoteMergeResult::Merged)  {
+                FPDFPage_RemoveAnnot(page, exist->annotIndex());
+            }
+        }
+    }
+    for(const IReaderNote *note : notes)
+    {
+        addIReaderNoteImpl(page, note);
+    }
+    for(const auto* exist : exists) {
+        delete exist;
+    }
+}
+
+
+void PDFDocument::listIReaderAnnotations(const FPDF_PAGE page, std::vector<const IReaderNote *> &out)
+{
+    int size = FPDFPage_GetAnnotCount(page);
+    for(int i=0;i<size;i++) {
+        ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_GetAnnot(page, i));
+        if(FPDFAnnot_HasKey(annot.get(), kIReaderNoteID)) {
+            IReaderNote *note = new IReaderNote(i);
+            note->loadData(page);
+            out.push_back(note);
+        }
+    }
+}
+
+void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *note)
+{
+    int startIndex = note->startIndex();
+    int endIndex = note->endIndex();
+    const std::string &msg = note->content();
+    const std::string &uuid = note->uuid();
+    const long timestamp = note->timestamp();
+    ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_CreateAnnot(page, FPDF_ANNOT_LINE));
+    ScopedFPDFTextPage text_page = ScopedFPDFTextPage(FPDFText_LoadPage(page));
+    //get the rect for text range
+    FS_RECTF rect;
+    FS_RECTF_init(rect);
+
+    int charCount = FPDFText_CountChars(text_page.get());
+    endIndex = std::min(endIndex, charCount -1);
+    printf("======start-end:%d, %d=====\n", startIndex, endIndex);
+    std::vector<FS_RECTF> lines;
+    listLines(0, startIndex, endIndex, lines);
+    for(const auto line : lines)
+    {
+        FS_RECTF_union(rect, line);
+    }
+    getBoundedText(text_page.get(), rect);
+    printf("=====Annot rect(%f, %f, %f, %f)=====\n", rect.left, rect.top, rect.right, rect.bottom);
+    //set rect
+    std::vector<FS_QUADPOINTSF> points;
+    for(const auto line : lines)
+    {
+        FS_QUADPOINTSF p;
+        rect2quadpoint(line, p);
+        points.push_back(p);
+    }
+    for(const auto p : points)
+    {
+        FPDFAnnot_AppendAttachmentPoints(annot.get(), &p);
+    }
+    FPDFAnnot_SetRect(annot.get(), &rect);
+
+    if(msg.length() > 0) {
+        setAnnotStringValue(annot.get(), kContents, msg);
+        setAnnotStringValue(annot.get(), kIReaderNoteID, uuid);
+        std::string timestampstr = string_format("%ld", timestamp);
+        setAnnotStringValue(annot.get(), kIReaderNoteLastModifiedTime, timestampstr);
+        std::string range = string_format("%d_%d", startIndex, endIndex);
+        setAnnotStringValue(annot.get(), kIReaderNoteRange, range);
+    }
+    //BLACK
+    FPDFAnnot_SetColor(annot.get(), FPDFANNOT_COLORTYPE_Color, 0,0,0,255);
 }
 
 //void PDFDocument::listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF &> lines)

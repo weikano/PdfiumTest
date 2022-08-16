@@ -28,13 +28,15 @@ public:
 
     //    void listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF&> lines);
     void setSavePath(const char *newSavePath);
+    void addIReaderNotes(int pageIndex, std::vector<IReaderNote*> &notes);
 
 private:
     const char* mSavePath;
-
-private:
-
     FPDF_DOCUMENT mDoc = nullptr;
+private:
+    void _addIReaderNotes(const FPDF_PAGE page, std::vector<IReaderNote*> &notes);
+    void listIReaderAnnotations(const FPDF_PAGE page, std::vector<const IReaderNote*> &out);
+    void addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *note);
     void treeWalking(FPDF_STRUCTTREE root);
     void getStructElements(FPDF_PAGE page, std::vector<FPDF_STRUCTELEMENT> &out);
     void recursiveTreeElement(FPDF_STRUCTELEMENT element, std::vector<FPDF_STRUCTELEMENT>& elements);
