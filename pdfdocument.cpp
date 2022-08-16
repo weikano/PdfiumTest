@@ -148,6 +148,7 @@ static void getFileIdentifier(FPDF_DOCUMENT doc, FPDF_FILEIDTYPE type)
 
 PDFDocument::PDFDocument(const char *path, const char *pwd)
 {    
+    std::cout<<__func__<<std::endl;
     mDoc = FPDF_LoadDocument(path, pwd);
     getFileIdentifier(mDoc, FILEIDTYPE_PERMANENT);
     getFileIdentifier(mDoc, FILEIDTYPE_CHANGING);    
@@ -155,6 +156,7 @@ PDFDocument::PDFDocument(const char *path, const char *pwd)
 
 PDFDocument::~PDFDocument()
 {
+    std::cout<<__func__<<std::endl;
     if(mDoc) {
         FPDF_CloseDocument(mDoc);
     }
@@ -395,17 +397,14 @@ void PDFDocument::_addIReaderNotes(const FPDF_PAGE page, std::vector<IReaderNote
         for(int m=0, n=exists.size();m<n;m++) {
             const IReaderNote *exist = exists.at(m);
             if(note->merge(*exist) == IReaderNote::IReaderNoteMergeResult::Merged)  {
-                FPDFPage_RemoveAnnot(page, exist->annotIndex());
+                FPDFPage_RemoveAnnot(page, exist->annotIndex());                
             }
         }
     }
     for(const IReaderNote *note : notes)
     {
         addIReaderNoteImpl(page, note);
-    }
-    for(const auto* exist : exists) {
-        delete exist;
-    }
+    }    
 }
 
 
@@ -448,6 +447,7 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
     printf("=====Annot rect(%f, %f, %f, %f)=====\n", rect.left, rect.top, rect.right, rect.bottom);
     //set rect
     std::vector<FS_QUADPOINTSF> points;
+    points.reserve(lines.size());
     for(const auto line : lines)
     {
         FS_QUADPOINTSF p;
@@ -470,6 +470,7 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
     }
     //BLACK
     FPDFAnnot_SetColor(annot.get(), FPDFANNOT_COLORTYPE_Color, 0,0,0,255);
+    FPDFPage_GenerateContent(page);
 }
 
 //void PDFDocument::listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF &> lines)
