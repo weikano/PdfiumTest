@@ -5,6 +5,7 @@
 int main(int argc, char *argv[])
 {
     FPDF_InitLibrary();
+//    test_scopeireadernotelist();
     testAddIReaderNotes();
 //    test_ireadernote_merge();
     FPDF_DestroyLibrary();

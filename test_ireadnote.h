@@ -5,6 +5,6 @@
 #include "ireadernote.h"
 
 void test_ireadernote_merge();
-
+void test_scopeireadernotelist();
 
 #endif // TEST_IREADNOTE_H

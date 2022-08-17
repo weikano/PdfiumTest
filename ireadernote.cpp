@@ -2,6 +2,16 @@
 #include "public/cpp/fpdf_scopers.h"
 
 #include "annot_const.h"
+IReaderNote::IReaderNote()
+{
+    std::cout<<__func__<<std::endl;
+}
+
+IReaderNote::~IReaderNote()
+{
+    std::cout<<__func__<<std::endl;
+}
+
 IReaderNote::IReaderNote(int annotIndex):_annotIndex(annotIndex)
 {
     _inited.store(false);

@@ -16,3 +16,10 @@ void test_ireadernote_merge()
     assert (note->content() == "content_2_5\ncontent_3_5");
     assert (note->timestamp() == std::max(123456L, merged->timestamp()));
 }
+
+void test_scopeireadernotelist()
+{
+    IReaderNote::ScopedIReaderNoteList list(new std::vector<IReaderNote*>);
+    list.get()->push_back(new IReaderNote);
+    list.get()->push_back(new IReaderNote);
+}

@@ -4,6 +4,10 @@
 #include <string>
 #include <atomic>
 #include <iostream>
+#include <vector>
+#include <memory>
+#include <type_traits>
+
 #include "public/fpdf_annot.h"
 class IReaderNote
 {
@@ -11,7 +15,8 @@ public:
     enum IReaderNoteMergeResult {
         Merged, Ignore
     };
-
+    IReaderNote();
+    ~IReaderNote();
     IReaderNote(int annotIndex);
     IReaderNote(int startIndex, int endIndex, const std::string &uuid, const std::string &content, long timestamp);
     void loadData(FPDF_PAGE page);
@@ -33,6 +38,18 @@ public:
         out<<"start:"<<note._startIndex<<", end:"<<note._endIndex<<", timestamp:"<<note._timestamp<<", uuid:"<<note._uuid<<std::endl;
         return out;
     }
+
+    using IReaderNoteList = std::vector<IReaderNote*>;
+    struct IReaderNoteListDeleter {
+        inline void operator()(IReaderNoteList* list) {
+            for(const auto* item:*list)
+            {
+                delete item;
+            }
+            list->clear();
+        }
+    };
+    using ScopedIReaderNoteList = std::unique_ptr<std::remove_pointer<IReaderNoteList>::type, IReaderNoteListDeleter>;
 
 private:
     bool _status = false;

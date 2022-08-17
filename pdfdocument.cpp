@@ -319,8 +319,8 @@ void PDFDocument::addAnnotations(int startIndex, int endIndex, const std::string
         setAnnotStringValue(annot.get(), kIReaderNoteRange, range);
     }
 
-    //RED
-    FPDFAnnot_SetColor(annot.get(), FPDFANNOT_COLORTYPE_Color, 239,40,40,255);
+    //BLACK
+    FPDFAnnot_SetColor(annot.get(), FPDFANNOT_COLORTYPE_Color, 0,0,0,255);
     if(FPDFPage_GenerateContent(page.get())) {
         printf("generate content\n");
     }
@@ -428,7 +428,7 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
     const std::string &msg = note->content();
     const std::string &uuid = note->uuid();
     const long timestamp = note->timestamp();
-    ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_CreateAnnot(page, FPDF_ANNOT_LINE));
+    ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_CreateAnnot(page, FPDF_ANNOT_UNDERLINE));
     ScopedFPDFTextPage text_page = ScopedFPDFTextPage(FPDFText_LoadPage(page));
     //get the rect for text range
     FS_RECTF rect;
