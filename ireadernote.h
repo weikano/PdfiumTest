@@ -54,12 +54,12 @@ public:
 private:
     bool _status = false;
     std::atomic_bool _inited;
-    int _annotIndex;
-    int _startIndex;
-    int _endIndex;
-    std::string _uuid;
-    std::string _content;
-    long _timestamp;
+    int _annotIndex = 0;
+    int _startIndex = 0;
+    int _endIndex = 0;
+    std::string _uuid = "";
+    std::string _content = "";
+    long _timestamp = 0L;
 };
 
 #endif // IREADERNOTE_H
