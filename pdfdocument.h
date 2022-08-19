@@ -17,6 +17,7 @@ public:
     int getPageCount();
     void walkStructtree();
     FPDF_PAGE loadPage(int index);
+    void getText(int pageIndex, int start, int end, std::string& out);
     void ClosePage(FPDF_PAGE page);
     void walkMarkObject();
     void walkAnnotations();

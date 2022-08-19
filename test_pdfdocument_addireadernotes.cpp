@@ -21,6 +21,25 @@ public:
 };
 using PDFDocumentPtr = std::unique_ptr<std::remove_pointer<PDFDocument>::type>;
 
+static void clear(std::vector<IReaderNote*> &notes)
+{
+    for(auto* note : notes)
+    {
+        delete note;
+    }
+    notes.clear();
+}
+
+static void clear(std::vector<const IReaderNote*> &notes)
+{
+    for(auto* note : notes)
+    {
+        delete note;
+    }
+    notes.clear();
+}
+
+
 void testAddIReaderNotes()
 {
 
@@ -40,21 +59,13 @@ void testAddIReaderNotes()
     notes.push_back(new IReaderNote(5,6, "uuid_5_6", "content_5_6", 123457L));
     pdoc.get()->addIReaderNotes(0, notes);
 
-    for(const auto* note : notes)
-    {
-        delete note;
-    }
-    notes.clear();
+
+    clear(notes);
 
     PDFDocumentPtr ptest(new PDFDocument(output, nullptr));
     std::vector<const IReaderNote*> exists;
     std::cout<<std::endl;
     std::cout<<"pdf_test.pdf listIReaderAnnotations\n"<<std::endl;
     ptest.get()->listIReaderAnnotations(0, exists);
-    for(const auto* exist : exists)
-    {
-        std::cout<<*exist<<std::endl;
-        delete exist;
-    }
-    exists.clear();
+    clear(exists);
 }

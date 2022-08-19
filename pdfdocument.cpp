@@ -203,6 +203,17 @@ FPDF_PAGE PDFDocument::loadPage(int index)
     return NULL;
 }
 
+void PDFDocument::getText(int pageIndex, int start, int end, std::string &out)
+{
+    ScopedFPDFPage page(FPDF_LoadPage(mDoc, pageIndex));
+    ScopedFPDFTextPage text_page(FPDFText_LoadPage(page.get()));
+    int len = end - start + 1;
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(len + 1);
+    FPDFText_GetText(text_page.get(), start, len, buf.data());
+    GetPlatformString(buf.data(), out);
+    std::cout<<"=========="<<__func__<<"========:"<<out<<std::endl;
+}
+
 void PDFDocument::ClosePage(FPDF_PAGE page)
 {
     if(page) {
@@ -470,7 +481,7 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
     }
     //BLACK
     FPDFAnnot_SetColor(annot.get(), FPDFANNOT_COLORTYPE_Color, 0,0,0,255);
-    FPDFPage_GenerateContent(page);
+//    FPDFPage_GenerateContent(page);
 }
 
 //void PDFDocument::listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF &> lines)
