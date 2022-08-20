@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/PdfiumTest.dir/PdfiumTest_autogen/mocs_compilation.cpp.o CMakeFiles/PdfiumTest.dir/main.cpp.o CMakeFiles/PdfiumTest.dir/pdfdocument.cpp.o CMakeFiles/PdfiumTest.dir/fpdf_stringhelper.cpp.o -o PdfiumTest  -labsl -lc++ -lchrome_zlib -licui18n -licuuc -lpdfium 

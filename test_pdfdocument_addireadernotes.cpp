@@ -47,9 +47,9 @@ void testAddIReaderNotes()
 //    auto tp = ptr.get();
 //    tp->hello();
 
-//    const char* path = "/home/weikano/git/pdfium/testing/resources/hello_world.pdf";
-    const char* path = "/home/weikano/文档/PDF32000_2008.pdf";
-    const char* output = "/home/weikano/文档/pdf_test.pdf";
+//    const char* path = "/home/roman/git/pdfium/testing/resources/hello_world.pdf";
+    const char* path = "/home/roman/文档/PDF32000_2008.pdf";
+    const char* output = "/home/roman/文档/pdf_test.pdf";
     PDFDocumentPtr pdoc(new PDFDocument(path, nullptr));
     pdoc.get()->setSavePath(output);
 //    pdoc.get()->addAnnotations(2,5,"hahaha");

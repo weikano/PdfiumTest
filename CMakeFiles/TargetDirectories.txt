@@ -1,4 +1,0 @@
-/home/weikano/qtprojects/PdfiumTest/CMakeFiles/rebuild_cache.dir
-/home/weikano/qtprojects/PdfiumTest/CMakeFiles/PdfiumTest.dir
-/home/weikano/qtprojects/PdfiumTest/CMakeFiles/edit_cache.dir
-/home/weikano/qtprojects/PdfiumTest/CMakeFiles/PdfiumTest_autogen.dir
