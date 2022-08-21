@@ -80,7 +80,7 @@ void testMergeIReaderNotes()
     std::vector<IReaderNote> exists;
     doc.get()->listIReaderAnnotations(0, exists);
     std::cout<<"==========already exists ireadernotes=========="<<std::endl;
-    for(const auto note:exists)
+    for(const auto &note:exists)
     {
         std::cout<<note;
     }
@@ -89,11 +89,11 @@ void testMergeIReaderNotes()
     std::vector<IReaderNote*> override;
 
     override.push_back(new IReaderNote(0,3,"uuid_0_3","content_0_3", 123457));
-//    override.push_back(new IReaderNote(4,10,"uuid_4_10","content_4_10", 1234578));
-//    override.push_back(new IReaderNote(12,20,"uuid_12_20","content_12_20", 1234578));
-//    override.push_back(new IReaderNote(23,30,"uuid_30_50","content_30_50", 1234578));
-//    override.push_back(new IReaderNote(40,45,"uuid_30_50","content_30_50", 1234578));
-//    override.push_back(new IReaderNote(60,65,"uuid_30_50","content_30_50", 1234578));
+    override.push_back(new IReaderNote(4,10,"uuid_4_10","content_4_10", 1234578));
+    override.push_back(new IReaderNote(12,20,"uuid_12_20","content_12_20", 1234578));
+    override.push_back(new IReaderNote(23,30,"uuid_30_50","content_30_50", 1234578));
+    override.push_back(new IReaderNote(40,45,"uuid_30_50","content_30_50", 1234578));
+    override.push_back(new IReaderNote(60,65,"uuid_30_50","content_30_50", 1234578));
 
     override.push_back(new IReaderNote(80,95,"uuid_30_50","content_30_50", 1234578));
     doc->addIReaderNotes(0, override);
@@ -108,7 +108,7 @@ void testMergeIReaderNotes()
     PDFDocument testdoc(save.c_str(), nullptr);
 //    PDFDocumentPtr test(new PDFDocument(save.c_str(), nullptr));
     testdoc.listIReaderAnnotations(0, exists);
-    for(const auto note:exists)
+    for(const auto &note:exists)
     {
         std::cout<<note;
     }

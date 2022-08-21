@@ -350,20 +350,17 @@ void PDFDocument::addAnnotations(int startIndex, int endIndex, const std::string
 
 void PDFDocument::listLines(FPDF_PAGE page, FPDF_TEXTPAGE text_page, int startIndex, int endIndex, std::vector<FS_RECTF> &lines)
 {
-//    ScopedFPDFPage page = ScopedFPDFPage(FPDF_LoadPage(mDoc, pageIndex));
-//    ScopedFPDFTextPage text_page = ScopedFPDFTextPage(FPDFText_LoadPage(page.get()));
     int count = FPDFText_CountChars(text_page);
     endIndex = std::min(endIndex, count -1);
-    int len = endIndex - startIndex + 1;
-//    int len = FPDFText_GetText(text_page.get(), startIndex, endIndex - startIndex + 1, nullptr);
-    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(len);
-    FPDFText_GetText(text_page, startIndex, len, buf.data());
-    FPDFText_GetText(text_page, startIndex, endIndex - startIndex + 1, buf.data());
-    std::string text;
-    GetPlatformString(buf.data(), text);
-    printf("lineLines text :%s\n", text.c_str());
-    FS_RECTF rect;
-    for(int i=startIndex; i<=endIndex; i++) {            
+//    int len = endIndex - startIndex + 1;
+//    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(len);
+//    FPDFText_GetText(text_page, startIndex, len, buf.data());
+//    FPDFText_GetText(text_page, startIndex, endIndex - startIndex + 1, buf.data());
+//    std::string text;
+//    GetPlatformString(buf.data(), text);
+//    printf("lineLines text :%s\n", text.c_str());
+    for(int i=startIndex; i<=endIndex; i++) {
+            FS_RECTF rect;
             FS_RECTF_init(rect);
             double l,r,b,t;
             if(FPDFText_GetCharBox(text_page, i, &l, &r, &b, &t))
@@ -463,7 +460,7 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
 //    printf("======start-end:%d, %d=====\n", startIndex, endIndex);
     std::vector<FS_RECTF> lines;
     listLines(page, text_page.get(), startIndex, endIndex, lines);
-    for(const auto line : lines)
+    for(const auto &line : lines)
     {
         FS_RECTF_union(rect, line);
     }
@@ -472,7 +469,7 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
     //set rect
     std::vector<FS_QUADPOINTSF> points;
     points.reserve(lines.size());
-    for(const auto line : lines)
+    for(const auto &line : lines)
     {
         FS_QUADPOINTSF p;
         rect2quadpoint(line, p);
