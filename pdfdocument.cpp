@@ -299,12 +299,12 @@ void PDFDocument::addAnnotations(int startIndex, int endIndex, const std::string
     endIndex = std::min(endIndex, charCount -1);
     printf("======start-end:%d, %d=====\n", startIndex, endIndex);
     std::vector<FS_RECTF> lines;
-    listLines(0, startIndex, endIndex, lines);
+    listLines(page.get(), text_page.get(), startIndex, endIndex, lines);
     for(const auto line : lines)
     {
         FS_RECTF_union(rect, line);
     }
-    getBoundedText(text_page.get(), rect);
+//    getBoundedText(text_page.get(), rect);
     printf("=====Annot rect(%f, %f, %f, %f)=====\n", rect.left, rect.top, rect.right, rect.bottom);
     //set rect
     std::vector<FS_QUADPOINTSF> points;
@@ -348,39 +348,36 @@ void PDFDocument::addAnnotations(int startIndex, int endIndex, const std::string
 
 }
 
-void PDFDocument::listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF> &lines)
+void PDFDocument::listLines(FPDF_PAGE page, FPDF_TEXTPAGE text_page, int startIndex, int endIndex, std::vector<FS_RECTF> &lines)
 {
-    ScopedFPDFPage page = ScopedFPDFPage(FPDF_LoadPage(mDoc, pageIndex));
-    ScopedFPDFTextPage text_page = ScopedFPDFTextPage(FPDFText_LoadPage(page.get()));
-    int count = FPDFText_CountChars(text_page.get());
+//    ScopedFPDFPage page = ScopedFPDFPage(FPDF_LoadPage(mDoc, pageIndex));
+//    ScopedFPDFTextPage text_page = ScopedFPDFTextPage(FPDFText_LoadPage(page.get()));
+    int count = FPDFText_CountChars(text_page);
     endIndex = std::min(endIndex, count -1);
     int len = endIndex - startIndex + 1;
 //    int len = FPDFText_GetText(text_page.get(), startIndex, endIndex - startIndex + 1, nullptr);
-    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(len + 1);
-    FPDFText_GetText(text_page.get(), startIndex, len, buf.data());
-    FPDFText_GetText(text_page.get(), startIndex, endIndex - startIndex + 1, buf.data());
+    std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(len);
+    FPDFText_GetText(text_page, startIndex, len, buf.data());
+    FPDFText_GetText(text_page, startIndex, endIndex - startIndex + 1, buf.data());
     std::string text;
     GetPlatformString(buf.data(), text);
     printf("lineLines text :%s\n", text.c_str());
-    for(int i=startIndex; i<=endIndex; i++) {
-            FS_RECTF rect;
+    FS_RECTF rect;
+    for(int i=startIndex; i<=endIndex; i++) {            
             FS_RECTF_init(rect);
             double l,r,b,t;
-            FPDFText_GetCharBox(text_page.get(), i, &l, &r, &b, &t);
-            FS_RECTF_set(rect, l, r, b, t);
-            FS_RECTF_lines(rect, lines);
+            if(FPDFText_GetCharBox(text_page, i, &l, &r, &b, &t))
+            {
+                FS_RECTF_set(rect, l, r, b, t);
+                FS_RECTF_lines(rect, lines);
+            }
     }
 }
 
-void PDFDocument::listIReaderAnnotations(int pageIndex, std::vector<const IReaderNote*> &notes)
+void PDFDocument::listIReaderAnnotations(int pageIndex, std::vector<IReaderNote> &notes)
 {
     ScopedFPDFPage page = ScopedFPDFPage(FPDF_LoadPage(mDoc, pageIndex));
     listIReaderAnnotations(page.get(), notes);
-}
-
-void PDFDocument::setSavePath(const char *newSavePath)
-{
-    mSavePath = newSavePath;
 }
 
 void PDFDocument::addIReaderNotes(int pageIndex, std::vector<IReaderNote *> &notes)
@@ -399,34 +396,50 @@ void PDFDocument::addIReaderNotes(int pageIndex, std::vector<IReaderNote *> &not
     }
 }
 
+void PDFDocument::setSavePath(const char *newSavePath)
+{
+    mSavePath = newSavePath;
+}
+
 void PDFDocument::_addIReaderNotes(const FPDF_PAGE page, std::vector<IReaderNote *> &notes)
 {
-    std::vector<const IReaderNote*> exists;
+    std::vector<IReaderNote> exists;
+    std::vector<int> removed;
     listIReaderAnnotations(page, exists);
     for(int i=0, size=notes.size();i<size;i++) {
         IReaderNote *note = notes.at(i);
+        if(!note){
+            continue;
+        }
         for(int m=0, n=exists.size();m<n;m++) {
-            const IReaderNote *exist = exists.at(m);
-            if(note->merge(*exist) == IReaderNote::IReaderNoteMergeResult::Merged)  {
-                FPDFPage_RemoveAnnot(page, exist->annotIndex());                
+            const IReaderNote exist = exists.at(m);
+            if(note->merge(exist) == IReaderNote::IReaderNoteMergeResult::Merged)  {
+                removed.push_back(exist.annotIndex());
+//                FPDFPage_RemoveAnnot(page, exist->annotIndex());
             }
         }
     }
     for(const IReaderNote *note : notes)
     {
         addIReaderNoteImpl(page, note);
-    }    
+    }
+    int del = 0;
+    for(auto idx : removed)
+    {
+        FPDFPage_RemoveAnnot(page, idx-del);
+        ++del;
+    }
 }
 
 
-void PDFDocument::listIReaderAnnotations(const FPDF_PAGE page, std::vector<const IReaderNote *> &out)
+void PDFDocument::listIReaderAnnotations(const FPDF_PAGE page, std::vector<IReaderNote> &out)
 {
     int size = FPDFPage_GetAnnotCount(page);
     for(int i=0;i<size;i++) {
         ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_GetAnnot(page, i));
         if(FPDFAnnot_HasKey(annot.get(), kIReaderNoteID)) {
-            IReaderNote *note = new IReaderNote(i);
-            note->loadData(page);
+            IReaderNote note(i);
+            note.loadData(page);
             out.push_back(note);
         }
     }
@@ -447,15 +460,15 @@ void PDFDocument::addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *no
 
     int charCount = FPDFText_CountChars(text_page.get());
     endIndex = std::min(endIndex, charCount -1);
-    printf("======start-end:%d, %d=====\n", startIndex, endIndex);
+//    printf("======start-end:%d, %d=====\n", startIndex, endIndex);
     std::vector<FS_RECTF> lines;
-    listLines(0, startIndex, endIndex, lines);
+    listLines(page, text_page.get(), startIndex, endIndex, lines);
     for(const auto line : lines)
     {
         FS_RECTF_union(rect, line);
     }
-    getBoundedText(text_page.get(), rect);
-    printf("=====Annot rect(%f, %f, %f, %f)=====\n", rect.left, rect.top, rect.right, rect.bottom);
+//    getBoundedText(text_page.get(), rect);
+//    printf("=====Annot rect(%f, %f, %f, %f)=====\n", rect.left, rect.top, rect.right, rect.bottom);
     //set rect
     std::vector<FS_QUADPOINTSF> points;
     points.reserve(lines.size());

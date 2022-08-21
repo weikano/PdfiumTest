@@ -23,3 +23,16 @@ void test_scopeireadernotelist()
     list.get()->push_back(new IReaderNote);
     list.get()->push_back(new IReaderNote);
 }
+
+void test_ireader_ctor()
+{
+    std::vector<IReaderNote> notes;
+    notes.reserve(10);
+    notes.push_back(IReaderNote(1,2, "uuid_1_2", "content_1_2", 12L));
+    notes.push_back(IReaderNote(3,4, "uuid_3_4", "content_3_4", 12L));
+    notes.push_back(IReaderNote(5,6, "uuid_5_6", "content_5_6", 12L));
+    notes.push_back(IReaderNote(7,8, "uuid_7_8", "content_7_8", 12L));
+    notes.push_back(IReaderNote(9,10, "uuid_9_10", "content_9_10", 12L));
+
+    notes.clear();
+}

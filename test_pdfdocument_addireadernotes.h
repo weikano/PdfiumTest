@@ -2,5 +2,6 @@
 #define TEST_PDFDOCUMENT_ADDIREADERNOTES_H
 
 void testAddIReaderNotes();
+void testMergeIReaderNotes();
 
 #endif // TEST_PDFDOCUMENT_ADDIREADERNOTES_H

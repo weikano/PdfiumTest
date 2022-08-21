@@ -12,7 +12,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-set(PDFium_DIR /home/weikano/下载/pdfium-linux-x64/)
 set(PDFium_DIR ${PROJECT_SOURCE_DIR}/pdfium-linux-x64/)
 set(ENV{PDFium_DIR} ${PDFium_DIR})
 message("variable is $ENV{PDFium_DIR}")
@@ -38,6 +37,8 @@ add_executable(PdfiumTest
   test_ireadnote.cpp
   test_pdfdocument_addireadernotes.cpp
   test_pdfdocument.cpp
+  dir.cpp
+  test_dir.cpp
 #  fs_rectf_helper.cpp
 
 #  converter.cpp

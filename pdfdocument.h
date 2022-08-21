@@ -24,19 +24,21 @@ public:
     void walkTextObject();
     void removeAllAnnotations();
     void addAnnotations(int startIndex, int endIndex, const std::string& message);  
-    void listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF> &lines);
-    void listIReaderAnnotations(int pageIndex,  std::vector<const IReaderNote*> &notes);
+    void listLines(FPDF_PAGE page, FPDF_TEXTPAGE text_page, int startIndex, int endIndex, std::vector<FS_RECTF> &lines);
+    void listIReaderAnnotations(int pageIndex,  std::vector<IReaderNote> &notes);
 
     //    void listLines(int pageIndex, int startIndex, int endIndex, std::vector<FS_RECTF&> lines);
-    void setSavePath(const char *newSavePath);
     void addIReaderNotes(int pageIndex, std::vector<IReaderNote*> &notes);
+
+    void setSavePath(const char *newSavePath);
 
 private:
     const char* mSavePath;
+//    std::string mSavePath;
     FPDF_DOCUMENT mDoc = nullptr;
 private:
     void _addIReaderNotes(const FPDF_PAGE page, std::vector<IReaderNote*> &notes);
-    void listIReaderAnnotations(const FPDF_PAGE page, std::vector<const IReaderNote*> &out);
+    void listIReaderAnnotations(const FPDF_PAGE page, std::vector<IReaderNote> &out);
     void addIReaderNoteImpl(const FPDF_PAGE page, const IReaderNote *note);
     void treeWalking(FPDF_STRUCTTREE root);
     void getStructElements(FPDF_PAGE page, std::vector<FPDF_STRUCTELEMENT> &out);

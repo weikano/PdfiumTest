@@ -28,14 +28,14 @@ void test_pdfdocument()
         doc->addAnnotations(start,end, msg);
         delete doc;
 
-        std::vector<const IReaderNote*> notes;
+        std::vector<IReaderNote> notes;
         PDFDocument *test = new PDFDocument(savePath.c_str(), nullptr);
         test->listIReaderAnnotations(0, notes);
         test->walkAnnotations();
         std::cout<<"======begin all ireadernotes" <<std::endl;
-        for(const IReaderNote* note : notes)
+        for(const IReaderNote note : notes)
         {
-            std::cout<<*note;
+            std::cout<<note;
         }
         std::cout<<"======end all ireadernotes" << std::endl;
 

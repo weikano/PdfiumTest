@@ -15,10 +15,13 @@ public:
     enum IReaderNoteMergeResult {
         Merged, Ignore
     };
-    IReaderNote();
-    ~IReaderNote();
-    IReaderNote(int annotIndex);
+    IReaderNote();    
+    explicit IReaderNote(int annotIndex);
     IReaderNote(int startIndex, int endIndex, const std::string &uuid, const std::string &content, long timestamp);
+    IReaderNote(const IReaderNote& note);
+    IReaderNote(const IReaderNote&& note) noexcept;
+    ~IReaderNote();
+
     void loadData(FPDF_PAGE page);
     int startIndex() const;
 

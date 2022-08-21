@@ -9,7 +9,7 @@ IReaderNote::IReaderNote()
 
 IReaderNote::~IReaderNote()
 {
-    std::cout<<__func__<<std::endl;
+    std::cout<<__func__<<this<<std::endl;
 }
 
 IReaderNote::IReaderNote(int annotIndex):_annotIndex(annotIndex)
@@ -18,8 +18,7 @@ IReaderNote::IReaderNote(int annotIndex):_annotIndex(annotIndex)
 }
 
 void IReaderNote::loadData(FPDF_PAGE page)
-{
-    std::cout<<__func__<<std::endl;
+{    
     if(_inited.compare_exchange_strong(_status, true)) {
         ScopedFPDFAnnotation annot = ScopedFPDFAnnotation(FPDFPage_GetAnnot(page, _annotIndex));
         //get ireadernote id
@@ -99,3 +98,25 @@ IReaderNote::IReaderNote(int startIndex, int endIndex, const std::string &uuid, 
     _content(content),
     _timestamp(timestamp)
 {}
+
+IReaderNote::IReaderNote(const IReaderNote &note):
+    _annotIndex(note.annotIndex()),
+    _startIndex(note.startIndex()),
+    _endIndex(note.endIndex()),
+    _uuid(note.uuid()),
+    _content(note.content()),
+    _timestamp(note.timestamp())
+{
+    std::cout<<"copy " <<&note<<" to "<<this<<std::endl;
+}
+
+IReaderNote::IReaderNote(const IReaderNote &&note) noexcept:
+_annotIndex(note.annotIndex()),
+_startIndex(note.startIndex()),
+_endIndex(note.endIndex()),
+_uuid(note.uuid()),
+_content(note.content()),
+_timestamp(note.timestamp())
+{
+std::cout<<"move:"<<&note<<" to " <<this<<std::endl;
+}

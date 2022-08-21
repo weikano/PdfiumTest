@@ -4,6 +4,7 @@
 
 #include "ireadernote.h"
 
+void test_ireader_ctor();
 void test_ireadernote_merge();
 void test_scopeireadernotelist();
 
