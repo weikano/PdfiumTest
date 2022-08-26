@@ -260,6 +260,13 @@ void PDFDocument::walkAnnotations()
     }
 }
 
+void PDFDocument::walkAnnotationsByPageIndex(int pageIndex)
+{
+    ScopedFPDFPage page(FPDF_LoadPage(mDoc, pageIndex));
+    ScopedFPDFTextPage text_page(FPDFText_LoadPage(page.get()));
+    analyzeAnnotations(pageIndex, page.get(), text_page.get());
+}
+
 void PDFDocument::walkTextObject()
 {
     int pageSize = FPDF_GetPageCount(mDoc);
@@ -396,6 +403,22 @@ void PDFDocument::addIReaderNotes(int pageIndex, std::vector<IReaderNote *> &not
 void PDFDocument::setSavePath(const char *newSavePath)
 {
     mSavePath = newSavePath;
+}
+
+void PDFDocument::removeAnnot(int pageIndex, int annotIdx)
+{
+    ScopedFPDFPage page(FPDF_LoadPage(mDoc, pageIndex));
+    FPDFPage_RemoveAnnot(page.get(), annotIdx);
+    FPDFPage_GenerateContent(page.get());
+    if(mSavePath) {
+        FileWriterImpl* writer = new FileWriterImpl;
+        writer->OpenPDFFileForWrite(mSavePath);
+        if(FPDF_SaveAsCopy(mDoc, writer, 0)) {
+            printf("SaveAsCopy\n");
+        }
+        writer->ClosePDFFileForWrite();
+        delete writer;
+    }
 }
 
 void PDFDocument::_addIReaderNotes(const FPDF_PAGE page, std::vector<IReaderNote *> &notes)
@@ -776,12 +799,7 @@ void PDFDocument::analyzeAnnotations(int index, FPDF_PAGE page, FPDF_TEXTPAGE te
         FPDFAnnot_GetAP(annot, FPDF_ANNOT_APPEARANCEMODE_NORMAL, apbuf.data(), aplen);
         std::string ap;
         GetPlatformString(apbuf.data(), ap);
-        int flags = FPDFAnnot_GetFlags(annot);
-        FS_RECTF rect;
-        FS_RECTF_init(rect);
-//        if(FPDFAnnot_GetRect(annot, &rect)) {
-//            getBoundedText(text_page, rect);
-//        }
+        int flags = FPDFAnnot_GetFlags(annot);      
 
         unsigned int r,g,b,a;
         FPDFAnnot_GetColor(annot, FPDFANNOT_COLORTYPE_Color, &r, &g, &b, &a);
@@ -790,32 +808,14 @@ void PDFDocument::analyzeAnnotations(int index, FPDF_PAGE page, FPDF_TEXTPAGE te
         printAnnotationStringValue(annot, kIReaderNoteID);
         printAnnotationStringValue(annot, kIReaderNoteLastModifiedTime);
         printAnnotationStringValue(annot, kIReaderNoteRange);
-//        unsigned long len = FPDFAnnot_GetStringValue(annot, kContents, nullptr, 0);
-//        std::vector<FPDF_WCHAR> buf = GetFPDFWideStringBuffer(len);
-//        FPDFAnnot_GetStringValue(annot, kContents, buf.data(), len);
-//        std::string text;
-//        GetPlatformString(buf.data(), text);
 
-//        FPDF_OBJECT_TYPE uuidType = FPDFAnnot_GetValueType(annot, kIReaderNoteID);
-//        printf("uuid value type: %s\n", getTypeStr(uuidType).c_str());
-//        FPDF_OBJECT_TYPE missingType = FPDFAnnot_GetValueType(annot, "test");
-//        printf("test value type: %s\n", getTypeStr(missingType).c_str());
-//        FPDF_OBJECT_TYPE timestampType = FPDFAnnot_GetValueType(annot, kIReaderNoteLastModifiedTime);
-//        printf("lastmodifiedtime type: %s\n", getTypeStr(timestampType).c_str());
-//        FPDF_OBJECT_TYPE rangeType = FPDFAnnot_GetValueType(annot, kIReaderNoteRange);
-//        printf("range type:%s\n", getTypeStr(rangeType).c_str());
-//        if(FPDFAnnot_HasKey(annot, kIReaderNoteLastModifiedTime) && timestampType == FPDF_OBJECT_STRING) {
-//            len = FPDFAnnot_GetStringValue(annot, kIReaderNoteLastModifiedTime, nullptr, 0);
-//            std::vector<FPDF_WCHAR> buf1 = GetFPDFWideStringBuffer(len);
-//            FPDFAnnot_GetStringValue(annot, kIReaderNoteLastModifiedTime, buf1.data(), len);
-//            std::wstring timestamp = GetPlatformWString(buf1.data());
-//            printf("lastmodifiedtime equals:%d\n", wcscmp(timestamp.c_str(), kTestTimeStamp));
-//        }
-
-
+        FS_RECTF rect;
+        FS_RECTF_init(rect);
+        FPDFAnnot_GetRect(annot, &rect);
         int objCount = FPDFAnnot_GetObjectCount(annot);
         printf("annot color: %d,%d,%d,%d\n", r, g,b,a);
-        printf("annot %d, subtype(%s), flag:%d, ap:%s, rect(%f, %f, %f, %f), objCount:%d\n", i, AnnotSubtypeToCString(subtype), flags, ap.c_str(), rect.left, rect.top, rect.right, rect.bottom, objCount);
+        printf("rect(%f, %f, %f, %f)\n", rect.left, rect.top, rect.right, rect.bottom);
+        printf("annot %d, subtype(%s), flag:%d, ap:%s, objCount:%d\n", i, AnnotSubtypeToCString(subtype), flags, ap.c_str(), objCount);
         size_t quadpointsCount = FPDFAnnot_CountAttachmentPoints(annot);
         if(quadpointsCount > 0) {
             for(int m=0;m<quadpointsCount;m++) {
@@ -827,7 +827,7 @@ void PDFDocument::analyzeAnnotations(int index, FPDF_PAGE page, FPDF_TEXTPAGE te
                     printf("analyze quadpoint : %d\n", m);
                     printf("quadpoint :%d (%f,%f,%f,%f,%f,%f,%f,%f)\n", m, quadpoint.x1,quadpoint.y1, quadpoint.x2, quadpoint.y2, quadpoint.x3, quadpoint.y3, quadpoint.x4, quadpoint.y4);
                     printf("convert quadpoint 2 rectf:(%f, %f, %f, %f)\n", tmpR.left, tmpR.top, tmpR.right, tmpR.bottom);
-                    getBoundedText(text_page, tmpR);
+//                    getBoundedText(text_page, tmpR);
                 }
             }
         }

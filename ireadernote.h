@@ -38,7 +38,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream &out, const IReaderNote & note)
     {
-        out<<"start:"<<note._startIndex<<", end:"<<note._endIndex<<", timestamp:"<<note._timestamp<<", uuid:"<<note._uuid<<std::endl;
+        out<<"annotIdx:"<<note.annotIndex()<<","<<"start:"<<note._startIndex<<", end:"<<note._endIndex<<", timestamp:"<<note._timestamp<<", uuid:"<<note._uuid<<std::endl;
         return out;
     }
 
@@ -57,7 +57,7 @@ public:
 private:
     bool _status = false;
     std::atomic_bool _inited;
-    int _annotIndex;
+    int _annotIndex= -1;
     int _startIndex;
     int _endIndex;
     std::string _uuid;

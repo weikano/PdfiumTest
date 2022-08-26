@@ -33,6 +33,7 @@ void IReaderNote::loadData(FPDF_PAGE page)
         std::string timestampstr;
         FPDFAnnotation_GetStringValueImpl(annot.get(), kIReaderNoteLastModifiedTime, timestampstr);
         if(!timestampstr.empty()) {
+            std::cout<<"timestamp:"<<timestampstr<<std::endl;
             sscanf(timestampstr.c_str(), "%ld", &_timestamp);
         }
         _content.clear();

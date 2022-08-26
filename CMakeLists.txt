@@ -39,6 +39,7 @@ add_executable(PdfiumTest
   test_pdfdocument.cpp
   dir.cpp
   test_dir.cpp
+  test_pdfdocument_removeannotations.cpp
 #  fs_rectf_helper.cpp
 
 #  converter.cpp

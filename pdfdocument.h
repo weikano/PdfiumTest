@@ -21,6 +21,7 @@ public:
     void ClosePage(FPDF_PAGE page);
     void walkMarkObject();
     void walkAnnotations();
+    void walkAnnotationsByPageIndex(int pageIndex);
     void walkTextObject();
     void removeAllAnnotations();
     void addAnnotations(int startIndex, int endIndex, const std::string& message);  
@@ -31,6 +32,7 @@ public:
     void addIReaderNotes(int pageIndex, std::vector<IReaderNote*> &notes);
 
     void setSavePath(const char *newSavePath);
+    void removeAnnot(int pageIndex, int annotIdx);
 
 private:
     const char* mSavePath;
