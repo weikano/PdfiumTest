@@ -832,6 +832,7 @@ void PDFDocument::analyzeAnnotations(int index, FPDF_PAGE page, FPDF_TEXTPAGE te
             }
         }
         printf("\n\n");
+        FPDFPage_CloseAnnot(annot);
 
     }
 
